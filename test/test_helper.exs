@@ -1,0 +1,2 @@
+Dotenv.load!
+ExUnit.start()
