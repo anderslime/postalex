@@ -1,28 +1,38 @@
 defmodule Postalex.Service.PostalDistrict do
-  import CouchResponse
-  alias Postalex.Service.Area
+  alias Postalex.Service.PostalCode
 
-  def all(country) do
-    {:ok, res} = "postal_districts" |> database |> Couchex.fetch_view({"lists","all"},[])
-    res |> Enum.map fn(map) -> value(map) |> from_map end
+  def summarize(postal_districts), do: postal_districts |> summarize(%{})
+
+  def add_sum_to_district([], _pc_sums, pd_sums), do: pd_sums
+  def add_sum_to_district([pd | pds], pc_sums, pd_sums) do
+    pd = pd
+    |> summarize_postal_codes(pc_sums)
+    |> apply_sums(pd)
+    add_sum_to_district(pds, pc_sums, [ pd | pd_sums ])
   end
 
-  def from_map(map) do
-    {[{_,_id},{_,_rev},{_,postal_name},{_,postal_code},{_,from},{_,to},{_,neighbours},{_,areas},{_,slug}]} = map
-    %{
-      postal_name: postal_name,
-      postal_code: postal_code,
-      from: from,
-      to: to,
-      neighbours: neighbours |> Enum.map(fn(pd)-> to_postal_district_light(pd) end),
-      areas: areas |> Enum.map(fn(pd)-> Area.from_map(pd) end),
-      slug: slug
-    }
+  defp summarize([], sum), do: sum
+  defp summarize([pd | pds], sum) do
+    kinds = pd.sums |> Map.keys
+    summarize(pds, merge(pd.sums, kinds, sum))
   end
 
-  defp to_postal_district_light(map) do
-    {[{_,postal_name},{_,postal_code},{_,from},{_,to}]} = map
-    %{postal_name: postal_name, postal_code: postal_code, from: from, to: to}
+  defp merge(_, [], res), do: res
+  defp merge(sums, [kind | kinds], res) do
+    sum = Map.get(sums, kind, 0) + Map.get(res, kind, 0)
+    merge(sums, kinds, Map.put(res, kind, sum))
+  end
+
+  defp apply_sums(sums, postal_district) do
+    Map.put(postal_district, :sums, sums)
+    |> Map.delete(:postal_codes)
+    |> Map.delete(:type)
+  end
+
+  defp summarize_postal_codes(pd, pc_sums) do
+    pd.postal_codes
+    |> Enum.map(fn(pc)-> Map.get(pc_sums, pc.postal_code ) end)
+    |> PostalCode.summarize
   end
 
 end

@@ -11,12 +11,8 @@ defmodule Postalex.Server do
     GenServer.start_link(__MODULE__, state, name: __MODULE__)
   end
 
-  def postal_code(country, postal_code) do
-    GenServer.call(__MODULE__, {:postal_code, country, postal_code})
-  end
-
-  def postal_district(country, postal_code) do
-    GenServer.call(__MODULE__, {:postal_districts, country, postal_code})
+  def areas(group, country, category) do
+    GenServer.call(__MODULE__, {:areas, group, country, category})
   end
 
   ## Server Callbacks
@@ -25,9 +21,10 @@ defmodule Postalex.Server do
     {:ok, state}
   end
 
-  def handle_call({:postal_codes, country, category}, _from, state) do
-    postal_codes = ConCache.get(String.to_atom(country), :postal_codes) |> Map.values
-    {:reply, postal_codes, state}
+  def handle_call({:areas, group, country, category}, _from, state) do
+    postal_code_sums = Postalex.Service.PostalCode.all(country, category, :with_sum)
+    areas = Postalex.Service.Area.summarized(group, country, category, postal_code_sums)
+    {:reply, areas, state}
   end
 
 end

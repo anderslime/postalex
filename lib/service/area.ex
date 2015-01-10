@@ -1,51 +1,72 @@
 defmodule Postalex.Service.Area do
-  import CouchResponse
+  import CouchHelper
   alias Postalex.Service.PostalDistrict
-  alias Postalex.Service.PostalCode
 
-  def all(country) do
-    sums = PostalCode.active_location_sum(country)
-    districts = PostalDistrict.all(country)
-    # PostalDistrict.all |> Enum.map(fn(pd)-> pd.areas end)
-    district_sums(sums, districts)
+  @main_table "postal_areas"
+
+  def all(country, category, postal_code_sums) do
+    all_areas(country, category, postal_code_sums)
   end
 
+  def summarized(:by_district, country, category, postal_code_sums) do
+    all(country, category, postal_code_sums)
+  end
 
-  defp district_sums(sums, districts) do
+  def summarized(:by_area, country, category, postal_code_sums) do
+    all(country, category, postal_code_sums) |> summerize_postal_districts([])
+  end
 
+  defp summerize_postal_districts([], group), do: group
+  defp summerize_postal_districts([area | areas], group) do
+    sums = PostalDistrict.summarize(area.postal_districts)
+    area = Map.put(area, :sums, sums) |> Map.delete(:postal_districts) |> Map.delete(:type)
+    summerize_postal_districts(areas, [ area | group])
+  end
 
-
-    districts |> Enum.map(fn(d)->
-      Map.merge(d, %{range: String.to_integer(d.from)..String.to_integer(d.to), sum: 0})
-
+  defp all_areas(country, category, postal_code_sums) do
+    cache_key = CacheHelper.cache_key(category, @main_table)
+    country |> ConCache.get_or_store(cache_key, fn() ->
+      fetch_all_areas(country) |> add_postal_code_sums(postal_code_sums, [])
     end)
-
-    %{ d | sum: d.sum+p.sum }
-
-    #   %{areas: [%{key: "nordjl", name: "Nordjylland"}], from: "9990",
-    # neighbours: [%{from: "9900", postal_code: "9900",
-    #    postal_name: "Frederikshavn", to: "9900"},
-    #  %{from: "9850", postal_code: "9850", postal_name: "Hirtshals", to: "9850"},
-    #  %{from: "9940", postal_code: "9940", postal_name: "Læsø", to: "9940"},
-    #  %{from: "9982", postal_code: "9982", postal_name: "Ålbæk", to: "9982"}],
-    # postal_code: "9990", postal_name: "Skagen", range: "9990".."9990",
-    # slug: "9990-skagen", to: "9990"}
-
-    # "postal_name": "Frederiksberg",
-    # "postal_code": "2000",
-    # "from": "2000",
-    # "to": "2000",
-    # "areas": [
-    #    {
-    #        "name": "Storkøbenhavn",
-    #        "key": "kbh"
-    #    }
-    # ],
   end
 
-  def from_map(map) do
-    {[{_,name},{_,key}]} = map
-    %{name: name, key: key}
+  defp add_postal_code_sums([], _, areas_with_sums), do: areas_with_sums
+  defp add_postal_code_sums([area | areas], postal_code_sums, areas_with_sums) do
+    area_with_sums = add_sums(area, postal_code_sums)
+    add_postal_code_sums(areas, postal_code_sums, [area_with_sums | areas_with_sums])
+  end
+
+  def fetch_all_areas(country) do
+    country
+    |> db_name(@main_table)
+    |> database
+    |> Couchex.fetch_view({"lists","all"},[])
+    |> fetch_response
+    |> to_docs
+  end
+
+  defp to_docs(res) do
+    res |> Enum.map fn(map)-> value(map) |> to_area end
+  end
+
+  defp add_sums(area, postal_code_sums) do
+    postal_districts = area.postal_districts |> PostalDistrict.add_sum_to_district(postal_code_sums, [])
+    area |> Map.put(:postal_districts, postal_districts) |> Map.delete(:type)
+  end
+
+  defp to_area({[_,_,{"type", type},{"id", id},{"name", name},{"postal_districts", pds}]}) do
+    pds = pds |> Enum.map fn(map)-> to_pd(map) end
+    %{ type: type, id: id, name: name, postal_districts: pds}
+  end
+
+  defp to_pd({[{"type", type},{"name", name},{"id", id},{"postal_codes", postal_codes}]}) do
+    postal_codes = postal_codes |> Enum.map fn(map)-> to_pc(map) end
+    %{type: type, name: name, id: id, postal_codes: postal_codes}
+  end
+
+  defp to_pc({[{"postal_name", postal_name},{"postal_code", postal_code},{"type", type}]}) do
+    %{postal_name: postal_name, postal_code: postal_code, type: type}
   end
 
 end
+
