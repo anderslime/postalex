@@ -24,14 +24,15 @@ defmodule Postalex.Service.PostalDistrict do
   end
 
   defp apply_sums(sums, postal_district) do
-    Map.put(postal_district, :sums, sums)
-    |> Map.delete(:postal_codes)
+    postal_district
     |> Map.delete(:type)
+    |> Map.delete(:postal_codes)
+    |> Map.put(:sums, sums)
   end
 
   defp summarize_postal_codes(pd, pc_sums) do
     pd.postal_codes
-    |> Enum.map(fn(pc)-> Map.get(pc_sums, pc.postal_code ) end)
+    |> Enum.map(fn(pc)-> HashDict.get(pc_sums, pc.postal_code ) end)
     |> PostalCode.summarize
   end
 

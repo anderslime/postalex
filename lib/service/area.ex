@@ -8,19 +8,24 @@ defmodule Postalex.Service.Area do
     all_areas(country, category, postal_code_sums)
   end
 
-  def summarized(:by_district, country, category, postal_code_sums) do
+  def summarized(ctry_cat, :by_district, postal_code_sums) do
+    %{ country: country, category: category } = ctry_cat
     all(country, category, postal_code_sums)
   end
 
-  def summarized(:by_area, country, category, postal_code_sums) do
+  def summarized(ctry_cat, :by_area, postal_code_sums) do
+    %{ country: country, category: category } = ctry_cat
     all(country, category, postal_code_sums) |> summerize_postal_districts([])
   end
 
   defp summerize_postal_districts([], group), do: group
   defp summerize_postal_districts([area | areas], group) do
     sums = PostalDistrict.summarize(area.postal_districts)
-    area = Map.put(area, :sums, sums) |> Map.delete(:postal_districts) |> Map.delete(:type)
-    summerize_postal_districts(areas, [ area | group])
+    area = area
+    |> Map.put(:sums, sums)
+    |> Map.delete(:postal_districts)
+    |> Map.delete(:type)
+    summerize_postal_districts(areas, [ area | group] )
   end
 
   defp all_areas(country, category, postal_code_sums) do
@@ -54,7 +59,7 @@ defmodule Postalex.Service.Area do
     area |> Map.put(:postal_districts, postal_districts) |> Map.delete(:type)
   end
 
-  defp to_area({[_,_,{"type", type},{"id", id},{"name", name},{"postal_districts", pds}]}) do
+  defp to_area({[_,_,{"type", type},{"id", id},{"name", name},{"postal_districts", pds} | _]}) do
     pds = pds |> Enum.map fn(map)-> to_pd(map) end
     %{ type: type, id: id, name: name, postal_districts: pds}
   end

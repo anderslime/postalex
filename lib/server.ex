@@ -11,14 +11,18 @@ defmodule Postalex.Server do
     GenServer.start_link(__MODULE__, state, name: __MODULE__)
   end
 
-  @doc "Returns all areas, summarized by area or postal district - group => :by_area or :by_district"
-  def areas(group, country, category) do
-    GenServer.call(__MODULE__, {:areas, group, country, category})
+  @doc """
+  Returns all areas, summarized by area or postal district - group => :by_area or :by_district
+  TODO: Data example
+  """
+  def areas(ctry_cat, group) do
+    GenServer.call(__MODULE__, {:areas, ctry_cat, group})
   end
 
+
   @doc "Returns locations situated within postal districts of List"
-  def locations(country: country, category: category, postal_districts: postal_districts) do
-    GenServer.call(__MODULE__, {:locations, country: country, category: category, postal_districts: postal_districts })
+  def locations(ctry_cat, kinds: kinds, postal_districts: postal_districts) do
+    GenServer.call(__MODULE__, {:locations, ctry_cat, kinds: kinds, postal_districts: postal_districts })
   end
 
   @doc "Generic search query function"
@@ -37,14 +41,14 @@ defmodule Postalex.Server do
     {:reply, results, state}
   end
 
-  def handle_call({:locations, country: country, category: category, postal_districts: postal_districts}, _from, state) do
-    results = Postalex.Service.Location.find(country: country, category: category, postal_districts: postal_districts)
+  def handle_call({:locations, ctry_cat, kinds: kinds, postal_districts: postal_districts}, _from, state) do
+    results = Postalex.Service.Location.find(ctry_cat ,kinds, postal_districts)
     {:reply, results, state}
   end
 
-  def handle_call({:areas, group, country, category}, _from, state) do
-    postal_code_sums = Postalex.Service.PostalCode.all(country, category, :with_sum)
-    areas = Postalex.Service.Area.summarized(group, country, category, postal_code_sums)
+  def handle_call({:areas, ctry_cat, group}, _from, state) do
+    postal_code_sums = Postalex.Service.PostalCode.all(ctry_cat, :with_sum)
+    areas = Postalex.Service.Area.summarized(ctry_cat, group, postal_code_sums)
     {:reply, areas, state}
   end
 

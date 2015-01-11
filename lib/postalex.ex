@@ -17,11 +17,3 @@ defmodule Postalex do
   end
 
 end
-
-
-
-
-
-
-
-
