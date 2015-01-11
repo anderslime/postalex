@@ -9,14 +9,17 @@ defmodule Postalex.Mixfile do
   end
 
   def application do
-    [applications: [:logger, :couchex, :con_cache],
+    [applications: [:logger, :couchex, :con_cache, :httpotion, :poison],
      mod: {Postalex, []}]
   end
 
   defp deps do
     [
+      {:ibrowse, github: "cmullaparthi/ibrowse", tag: "v4.1.0"},
+      {:httpotion, "~> 1.0.0"},
       {:con_cache, "~> 0.6.0"},
       {:couchex, github: "ringling/couchex"},
+      {:poison, github: "devinus/poison"},
       {:dotenv, "~> 0.0.4"},
       {:exprof, "0.1.3"}
     ]
