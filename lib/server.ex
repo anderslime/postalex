@@ -41,8 +41,9 @@ defmodule Postalex.Server do
   end
 
   def handle_call({:ping}, _from, state) do
-    {:reply, :pong, state}
+    {:reply, [CouchHelper.ping, Elastix.Client.ping], state}
   end
+
 
   def handle_call({:execute_query, query_type, query, index, type}, _from, state) do
     results = Elastix.Client.execute(query_type, query, index, type)

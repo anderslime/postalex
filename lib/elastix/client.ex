@@ -1,5 +1,14 @@
 defmodule Elastix.Client do
 
+  def ping do
+    try do
+      HTTPotion.get(elastic_url)
+      {:ok, "elastic"}
+    rescue
+      e in HTTPotion.HTTPError -> {:error,"elastic: #{e.message}" }
+    end
+  end
+
   def execute(:search, query, index, type) do
     "#{elastic_url}/#{index}/#{type}/_search"
     |> post(query)
