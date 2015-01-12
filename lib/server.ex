@@ -11,6 +11,10 @@ defmodule Postalex.Server do
     GenServer.start_link(__MODULE__, state, name: __MODULE__)
   end
 
+  def ping do
+    GenServer.call(__MODULE__, {:ping})
+  end
+
   @doc """
   Returns all areas, summarized by area or postal district - group => :by_area or :by_district
   TODO: Data example
@@ -34,6 +38,10 @@ defmodule Postalex.Server do
 
   def init(state) do
     {:ok, state}
+  end
+
+  def handle_call({:ping}, _from, state) do
+    {:reply, :pong, state}
   end
 
   def handle_call({:execute_query, query_type, query, index, type}, _from, state) do
