@@ -76,8 +76,8 @@ defmodule Postalex.Service.PostalCode do
     %{ number: number, sum: sum, kind: kind }
   end
 
-  defp pc_from_map({[{"postal_name", postal_name},{"postal_code", postal_code},{"type", type}]}) do
-    %{ number: postal_code, name: postal_name, type: type }
+  defp pc_from_map({[{"postal_name", postal_name},{"postal_code", postal_code},{"type", type},{"postal_district_id", postal_district_id}]}) do
+    %{ number: postal_code, name: postal_name, type: type, postal_district_id: postal_district_id }
   end
 
   # TODO: Fetch from ES instead of couch
