@@ -50,19 +50,14 @@ defmodule Postalex.Server do
   end
 
   ## Server Callbacks
-
-  def init(state) do
-    {:ok, state}
-  end
+  def init(state), do: {:ok, state}
 
   def handle_call({:ping}, _from, state) do
     {:reply, [CouchHelper.ping, Elastix.Client.ping], state}
   end
 
   def handle_call({:district_locations, ctry_cat, kinds: kinds, postal_code: postal_code}, _from, state) do
-    pc = Postalex.Service.PostalCode.all(ctry_cat, :without_sum)
-      |> Enum.find(fn(pc) -> pc.number == postal_code end)
-    results = Postalex.Service.Location.find(ctry_cat, kinds, [pc])
+    results = Postalex.Service.Location.district_locations_by_postal_code(ctry_cat, kinds, postal_code)
     {:reply, results, state}
   end
 
