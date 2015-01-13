@@ -39,6 +39,11 @@ defmodule Postalex.Server do
     GenServer.call(__MODULE__, {:locations, ctry_cat, kinds: kinds, postal_districts: postal_districts })
   end
 
+  @doc "Returns all locations of the district in which postal_code is situated"
+  def district_locations(ctry_cat, kinds: kinds, postal_code: postal_code ) do
+    GenServer.call(__MODULE__, {:district_locations, ctry_cat, kinds: kinds, postal_code: postal_code})
+  end
+
   @doc "Generic search query function"
   def execute(query_type, query, index, type) do
     GenServer.call(__MODULE__, {:execute_query, query_type, query, index, type })
@@ -54,6 +59,12 @@ defmodule Postalex.Server do
     {:reply, [CouchHelper.ping, Elastix.Client.ping], state}
   end
 
+  def handle_call({:district_locations, ctry_cat, kinds: kinds, postal_code: postal_code}, _from, state) do
+    pc = Postalex.Service.PostalCode.all(ctry_cat, :without_sum)
+      |> Enum.find(fn(pc) -> pc.number == postal_code end)
+    results = Postalex.Service.Location.find(ctry_cat, kinds, [pc])
+    {:reply, results, state}
+  end
 
   def handle_call({:execute_query, query_type, query, index, type}, _from, state) do
     results = Elastix.Client.execute(query_type, query, index, type)
