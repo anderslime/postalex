@@ -4,6 +4,9 @@ defmodule Postalex.Service.Area do
 
   @main_table "postal_areas"
 
+  def all(country, category, []) do
+    all_areas(country, category, [])
+  end
   def all(country, category, postal_code_sums) do
     all_areas(country, category, postal_code_sums)
   end
@@ -26,6 +29,13 @@ defmodule Postalex.Service.Area do
     |> Map.delete(:postal_districts)
     |> Map.delete(:type)
     summerize_postal_districts(areas, [ area | group] )
+  end
+
+  defp all_areas(country, category, []) do
+    cache_key = CacheHelper.cache_key(category, @main_table)
+    country |> ConCache.get_or_store(cache_key, fn() ->
+      fetch_all_areas(country)
+    end)
   end
 
   defp all_areas(country, category, postal_code_sums) do

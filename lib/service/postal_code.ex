@@ -19,6 +19,22 @@ defmodule Postalex.Service.PostalCode do
     end)
   end
 
+  def postal_district_id(ctry_cat, postal_code) do
+    pc = postal_codes_dict(ctry_cat)
+      |> find_postal_code(postal_code)
+    if is_nil(pc), do: nil, else: pc.postal_district_id
+  end
+
+  defp find_postal_code(codes, postal_code) do
+    codes[postal_code] || find_postal_district(codes, postal_code)
+  end
+
+  defp find_postal_district(codes, postal_code) do
+    codes
+      |> Dict.values
+      |> Enum.find(fn(pc) -> pc.postal_district_id == postal_code end)
+  end
+
   def summarize(postal_codes) do
     postal_codes |> summarize(%{})
   end
@@ -98,6 +114,17 @@ defmodule Postalex.Service.PostalCode do
 
   defp remove_field(sums, field) do
     sums |> Enum.map fn(sum)-> Map.delete(sum, field) end
+  end
+
+
+  defp postal_codes_dict(ctry_cat) do
+    %{ country: country, category: category } = ctry_cat
+    cache_key = CacheHelper.cache_key("pc_dict", @main_table)
+    ConCache.get_or_store(country, cache_key, fn() ->
+      {_, dict} = all(ctry_cat, :without_sum)
+      |> Enum.map_reduce(HashDict.new, fn(x, acc)-> {0, HashDict.put(acc, x.number, x)}  end)
+      dict
+    end)
   end
 
 end
