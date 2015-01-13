@@ -1,17 +1,36 @@
 defmodule Postalex.Service.Location do
 
   def find(ctry_cat, kinds, postal_districts) do
-    %{ country: country, category: category } = ctry_cat
-    index = "#{country}_#{category}_locations"
-    type =  "location"
-    opts = %{size: 1000}
-    query = Elastix.Location.Query.postal_district_query(kinds, postal_districts, opts)
-    response = Elastix.Client.execute(:search, query, index, type)
-    response["hits"]["hits"] |> Enum.map fn(res)-> map_to_loc(res) end
+    { index, type } = index_type(ctry_cat)
+    query = Elastix.Location.Query.postal_district_query(kinds, postal_districts)
+    Elastix.Client.execute(:search, query, index, type)
+    |> location_response
+  end
+
+  def by_bounding_box(ctry_cat, kinds, bounding_box) do
+    { index, type } = index_type(ctry_cat)
+    query = Elastix.Location.Query.bounding_box(kinds, bounding_box.bottom_left, bounding_box.top_right)
+    Elastix.Client.execute(:search, query, index, type)
+    |> location_response
+  end
+
+  defp location_response(response) do
+    %{ total: total(response), locations: locations(response), es_time_ms: time(response) }
   end
 
   defp map_to_loc(res) do
     res["_source"] |> Map.delete("_id") |> Map.delete("_rev")
+  end
+
+  defp index_type(%{ country: country, category: category }) do
+    { "#{country}_#{category}_locations", "location" }
+  end
+  defp total(response), do: response["hits"]["total"]
+  defp time(response), do: response["took"]
+  defp hits(response), do: response["hits"]["hits"]
+
+  defp locations(response) do
+    response |> hits |> Enum.map fn(res)-> map_to_loc(res) end
   end
 
 end
