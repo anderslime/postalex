@@ -1,5 +1,5 @@
 defmodule Postalex.Service.PostalCodeTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: true
   alias Postalex.Service.PostalCode
   require Logger
 

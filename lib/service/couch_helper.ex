@@ -1,5 +1,9 @@
 defmodule CouchHelper do
 
+  def ping do
+    server_connection |> Couchex.server_info |> _response
+  end
+
   def value({[_,_,{_,value}]}), do: value
   def fetch_response({:ok, response}), do: response
   def db_name(country, dbname), do: "#{country}_#{dbname}"
@@ -19,5 +23,8 @@ defmodule CouchHelper do
     pass = System.get_env["COUCH_PASS"]
     Couchex.server_connection(couchdb_url, [{:basic_auth, {user, pass}}])
   end
+
+  defp _response({:error, msg}), do: {:error, "couchdb"}
+  defp _response({:ok, _}), do: {:ok, "couchdb"}
 
 end
