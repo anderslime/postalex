@@ -23,6 +23,16 @@ defmodule Postalex.Server do
     GenServer.call(__MODULE__, {:areas, ctry_cat, group})
   end
 
+  @doc """
+  Usage:
+  bounding_box = %{ bottom_left: bottom_left, top_right: top_right }
+  kinds = [:warehouse, :office]
+  ctry_cat = %{country: :dk, category: :lease}
+  locations(ctry_cat, kinds: kinds, bounding_box: bounding_box)
+  """
+  def locations(ctry_cat, kinds: kinds, bounding_box: bounding_box) do
+    GenServer.call(__MODULE__, {:locations, ctry_cat, kinds: kinds, bounding_box: bounding_box })
+  end
 
   @doc "Returns locations situated within postal districts of List"
   def locations(ctry_cat, kinds: kinds, postal_districts: postal_districts) do
@@ -47,6 +57,11 @@ defmodule Postalex.Server do
 
   def handle_call({:execute_query, query_type, query, index, type}, _from, state) do
     results = Elastix.Client.execute(query_type, query, index, type)
+    {:reply, results, state}
+  end
+
+  def handle_call({:locations, ctry_cat, kinds: kinds, bounding_box: bounding_box}, _from, state) do
+    results = Postalex.Service.Location.by_bounding_box(ctry_cat ,kinds, bounding_box)
     {:reply, results, state}
   end
 
