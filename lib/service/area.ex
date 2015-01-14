@@ -7,8 +7,15 @@ defmodule Postalex.Service.Area do
   def all(country, category, []) do
     all_areas(country, category, [])
   end
+
   def all(country, category, postal_code_sums) do
     all_areas(country, category, postal_code_sums)
+  end
+
+  def by_slug(ctry_cat, area_slug) do
+    %{ country: country, category: category } = ctry_cat
+    all_areas(country, category, [])
+      |> Enum.find(fn(area)-> area.slug == area_slug end)
   end
 
   def summarized(ctry_cat, :by_district, postal_code_sums) do
@@ -69,14 +76,14 @@ defmodule Postalex.Service.Area do
     area |> Map.put(:postal_districts, postal_districts) |> Map.delete(:type)
   end
 
-  defp to_area({[_,_,{"type", type},{"id", id},{"name", name},{"postal_districts", pds} | _]}) do
+  defp to_area({[_,_,{"type", type},{"id", id},{"name", name},{"postal_districts", pds},{"slug", slug} | _]}) do
     pds = pds |> Enum.map fn(map)-> to_pd(map) end
-    %{ type: type, id: id, name: name, postal_districts: pds}
+    %{ type: type, id: id, slug: slug, name: name, postal_districts: pds}
   end
 
-  defp to_pd({[{"type", type},{"name", name},{"id", id},{"postal_codes", postal_codes}]}) do
+  defp to_pd({[{"type", type},{"name", name},{"id", id},{"postal_codes", postal_codes},{"slug", slug},{"key", key}]}) do
     postal_codes = postal_codes |> Enum.map fn(map)-> to_pc(map) end
-    %{type: type, name: name, id: id, postal_codes: postal_codes}
+    %{type: type, name: name, id: id, slug: slug, key: key, postal_codes: postal_codes}
   end
 
   defp to_pc({[{"postal_name", postal_name},{"postal_code", postal_code},{"type", type}]}) do

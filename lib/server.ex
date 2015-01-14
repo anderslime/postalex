@@ -23,6 +23,13 @@ defmodule Postalex.Server do
     GenServer.call(__MODULE__, {:areas, ctry_cat, group})
   end
 
+  def locations(ctry_cat, kinds: kinds, area_slug: area_slug) do
+     GenServer.call(__MODULE__, {:locations, ctry_cat, kinds: kinds, area_slug: area_slug })
+  end
+  def locations(ctry_cat, kinds: kinds, postal_district_slug: postal_district_slug) do
+     GenServer.call(__MODULE__, {:locations, ctry_cat, kinds: kinds, postal_district_slug: postal_district_slug })
+  end
+
   @doc """
   Usage:
   bounding_box = %{ bottom_left: bottom_left, top_right: top_right }
@@ -66,8 +73,19 @@ defmodule Postalex.Server do
     {:reply, results, state}
   end
 
+  def handle_call({:locations, ctry_cat, kinds: kinds, area_slug: area_slug}, _from, state) do
+    results = Postalex.Service.Location.find_by_area_slug(ctry_cat ,kinds, area_slug)
+    {:reply, results, state}
+  end
+
+  def handle_call({:locations, ctry_cat, kinds: kinds, postal_district_slug: postal_district_slug}, _from, state) do
+    postal_district = Postalex.Service.PostalDistrict.find_by_slug(ctry_cat, postal_district_slug)
+    results = Postalex.Service.Location.find(ctry_cat ,kinds, [postal_district])
+    {:reply, results, state}
+  end
+
   def handle_call({:locations, ctry_cat, kinds: kinds, bounding_box: bounding_box}, _from, state) do
-    results = Postalex.Service.Location.by_bounding_box(ctry_cat ,kinds, bounding_box)
+    results = Postalex.Service.Location.by_bounding_box(ctry_cat, kinds, bounding_box)
     {:reply, results, state}
   end
 

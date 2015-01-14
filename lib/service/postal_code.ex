@@ -96,7 +96,6 @@ defmodule Postalex.Service.PostalCode do
     %{ number: postal_code, name: postal_name, type: type, postal_district_id: postal_district_id }
   end
 
-  # TODO: Fetch from ES instead of couch
   defp fetch_postal_codes(country) do
     country
     |> db_name("postal_areas")
