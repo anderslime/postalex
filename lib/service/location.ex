@@ -1,7 +1,21 @@
 defmodule Postalex.Service.Location do
 
+  alias Postalex.Service.Area
+
   def find(ctry_cat, kinds, postal_districts) do
     _find(ctry_cat, kinds, postal_districts)
+  end
+
+  def find_by_area_slug(ctry_cat, kinds, area_slug) do
+    area = Area.by_slug(ctry_cat, area_slug)
+    _find(ctry_cat, kinds, postal_district_ids(area_slug, area))
+  end
+
+  defp postal_district_ids(area_slug, nil) do
+    raise "Area with slug '#{area_slug}' not found"
+  end
+  defp postal_district_ids(_, area) do
+    area.postal_districts |> Enum.map fn(pd)-> pd.id end
   end
 
   def by_bounding_box(ctry_cat, kinds, bounding_box) do
