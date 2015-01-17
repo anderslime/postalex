@@ -4,8 +4,7 @@ defmodule Postalex.Service.PostalCode do
   @main_table "postal_codes"
 
   def all(ctry_cat, :without_sum) do
-    clients = %{ couch_client: CouchClient }
-    all(ctry_cat, :without_sum, clients)
+    all(ctry_cat, :without_sum, default_clients)
   end
   def all(ctry_cat, :without_sum, clients) do
     %{ country: country, category: category } = ctry_cat
@@ -16,11 +15,7 @@ defmodule Postalex.Service.PostalCode do
   end
 
   def all(ctry_cat, :with_sum) do
-    clients = %{
-      couch_client: CouchClient,
-      location_aggregation: Elastix.Location.Aggregation
-    }
-    all(ctry_cat, :with_sum, clients)
+    all(ctry_cat, :with_sum, default_clients)
   end
   def all(ctry_cat, :with_sum, clients ) do
     %{ country: country, category: category } = ctry_cat
@@ -32,10 +27,16 @@ defmodule Postalex.Service.PostalCode do
   end
 
   def postal_district_id(ctry_cat, postal_code) do
-    pc = postal_codes_dict(ctry_cat)
-      |> find_postal_code(postal_code)
-    pc || pc.postal_district_id
+    postal_district_id(ctry_cat, postal_code, default_clients)
   end
+  def postal_district_id(ctry_cat, postal_code, clients) do
+    postal_codes_dict(ctry_cat, clients)
+      |> find_postal_code(postal_code)
+      |> _postal_district_id
+  end
+
+  defp _postal_district_id(nil), do: nil
+  defp _postal_district_id(pc), do: pc.postal_district_id
 
   defp find_postal_code(codes, postal_code) do
     codes[postal_code] || find_postal_district(codes, postal_code)
@@ -89,14 +90,21 @@ defmodule Postalex.Service.PostalCode do
     sums |> Enum.map fn(sum)-> Map.delete(sum, field) end
   end
 
-  defp postal_codes_dict(ctry_cat) do
+  defp postal_codes_dict(ctry_cat, clients) do
     %{ country: country, category: _ } = ctry_cat
     cache_key = CacheHelper.cache_key("pc_dict", @main_table)
     ConCache.get_or_store(country, cache_key, fn() ->
-      {_, dict} = all(ctry_cat, :without_sum)
+      {_, dict} = all(ctry_cat, :without_sum, clients)
         |> Enum.map_reduce(HashDict.new, fn(x, acc)-> {0, HashDict.put(acc, x.number, x)}  end)
       dict
     end)
+  end
+
+  defp default_clients do
+    %{
+      couch_client: CouchClient,
+      location_aggregation: Elastix.Location.Aggregation
+    }
   end
 
 end
