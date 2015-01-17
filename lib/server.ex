@@ -57,7 +57,10 @@ defmodule Postalex.Server do
   end
 
   ## Server Callbacks
-  def init(state), do: {:ok, state}
+  def init(state) do
+    Logger.info "Postalex.Server started"
+    {:ok, state}
+  end
 
   def handle_call({:ping}, _from, state) do
     {:reply, [CouchHelper.ping, Elastix.Client.ping], state}
