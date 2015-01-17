@@ -15,14 +15,15 @@ defmodule Postalex.Service.PostalCode do
     %{ country: country, category: category } = ctry_cat
     cache_key = CacheHelper.cache_key(:with_sum, category, @main_table)
     ConCache.get_or_store(country, cache_key, fn() ->
-      fetch_postal_codes_with_sum(country, category)
+      sums = Elastix.Location.Aggregation.postal_code_sums_by_kind(country, category)
+      fetch_postal_codes(country) |> add_sums(sums, HashDict.new)
     end)
   end
 
   def postal_district_id(ctry_cat, postal_code) do
     pc = postal_codes_dict(ctry_cat)
       |> find_postal_code(postal_code)
-    if is_nil(pc), do: nil, else: pc.postal_district_id
+    pc || pc.postal_district_id
   end
 
   defp find_postal_code(codes, postal_code) do
@@ -48,13 +49,6 @@ defmodule Postalex.Service.PostalCode do
   defp merge([sum | sums], res) do
     sum_res = Map.put(res, sum.kind, sum.sum + Map.get(res, sum.kind, 0))
     merge(sums, sum_res)
-  end
-
-  defp fetch_postal_codes_with_sum(country, category) do
-    sums = Elastix.Location.Aggregation.postal_code_sums_by_kind(country, category)
-    country
-    |> fetch_postal_codes
-    |> add_sums(sums, HashDict.new)
   end
 
   defp add_sums([], sums, codes), do: codes
@@ -97,13 +91,12 @@ defmodule Postalex.Service.PostalCode do
     sums |> Enum.map fn(sum)-> Map.delete(sum, field) end
   end
 
-
   defp postal_codes_dict(ctry_cat) do
-    %{ country: country, category: category } = ctry_cat
+    %{ country: country, category: _ } = ctry_cat
     cache_key = CacheHelper.cache_key("pc_dict", @main_table)
     ConCache.get_or_store(country, cache_key, fn() ->
       {_, dict} = all(ctry_cat, :without_sum)
-      |> Enum.map_reduce(HashDict.new, fn(x, acc)-> {0, HashDict.put(acc, x.number, x)}  end)
+        |> Enum.map_reduce(HashDict.new, fn(x, acc)-> {0, HashDict.put(acc, x.number, x)}  end)
       dict
     end)
   end
