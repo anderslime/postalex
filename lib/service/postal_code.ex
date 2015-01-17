@@ -4,19 +4,30 @@ defmodule Postalex.Service.PostalCode do
   @main_table "postal_codes"
 
   def all(ctry_cat, :without_sum) do
+    clients = %{ couch_client: CouchClient }
+    all(ctry_cat, :without_sum, clients)
+  end
+  def all(ctry_cat, :without_sum, clients) do
     %{ country: country, category: category } = ctry_cat
     cache_key = CacheHelper.cache_key(:without_sum, @main_table)
     ConCache.get_or_store(country, cache_key, fn() ->
-      fetch_postal_codes(country)
+      clients.couch_client.postal_codes(country)
     end)
   end
 
   def all(ctry_cat, :with_sum) do
+    clients = %{
+      couch_client: CouchClient,
+      location_aggregation: Elastix.Location.Aggregation
+    }
+    all(ctry_cat, :with_sum, clients)
+  end
+  def all(ctry_cat, :with_sum, clients ) do
     %{ country: country, category: category } = ctry_cat
     cache_key = CacheHelper.cache_key(:with_sum, category, @main_table)
     ConCache.get_or_store(country, cache_key, fn() ->
-      sums = Elastix.Location.Aggregation.postal_code_sums_by_kind(country, category)
-      fetch_postal_codes(country) |> add_sums(sums, HashDict.new)
+      sums = clients.location_aggregation.postal_code_sums_by_kind(country, category)
+      clients.couch_client.postal_codes(country) |> add_sums(sums, HashDict.new)
     end)
   end
 
@@ -66,19 +77,6 @@ defmodule Postalex.Service.PostalCode do
 
   defp from_map({[{_, [number, kind]},{ _ , sum}]}) do
     %{ number: number, sum: sum, kind: kind }
-  end
-
-  defp pc_from_map({[{"postal_name", postal_name},{"postal_code", postal_code},{"type", type},{"postal_district_id", postal_district_id}]}) do
-    %{ number: postal_code, name: postal_name, type: type, postal_district_id: postal_district_id }
-  end
-
-  defp fetch_postal_codes(country) do
-    country
-    |> db_name("postal_areas")
-    |> database
-    |> Couchex.fetch_view({"lists","postal_codes"},[])
-    |> fetch_response
-    |> Enum.map fn(map)-> value(map) |> pc_from_map end
   end
 
   defp merge_sum(pc, nil), do: Map.merge(pc, %{ sums: [] })
