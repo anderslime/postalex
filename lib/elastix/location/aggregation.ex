@@ -1,5 +1,26 @@
 defmodule Elastix.Location.Aggregation do
 
+  def postal_code_sums_by_kind(country, category) do
+    index = "#{country}_#{category}_locations"
+    type =  "location"
+    query = Elastix.Location.Aggregation.by_postal_code_kind
+    response = Elastix.Client.execute(:search, query, index, type)
+    total = response["hits"]["total"]
+    response["aggregations"]["postal_codes_kind"]["buckets"]
+    |> buckets_to_pd_map(%{})
+    |> Map.put(:total_locations, total)
+  end
+
+  defp buckets_to_pd_map([], pd_map), do: pd_map
+  defp buckets_to_pd_map([bucket | buckets], pd_map) do
+    pd_key = bucket["key"]
+    kinds = bucket["kind"]["buckets"] |> Enum.map fn(kind)-> %{kind: kind["key"], sum: kind["doc_count"], number: pd_key} end
+    buckets_to_pd_map(buckets, Map.put(pd_map, pd_key, kinds) )
+  end
+
+  ##############
+  # Aggregations
+
   def by_postal_code do
     %{
       size: 0,

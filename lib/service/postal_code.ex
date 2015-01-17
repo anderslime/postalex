@@ -51,7 +51,7 @@ defmodule Postalex.Service.PostalCode do
   end
 
   defp fetch_postal_codes_with_sum(country, category) do
-    sums = postal_code_sums_by_kind(country, category)
+    sums = Elastix.Location.Aggregation.postal_code_sums_by_kind(country, category)
     country
     |> fetch_postal_codes
     |> add_sums(sums, HashDict.new)
@@ -68,24 +68,6 @@ defmodule Postalex.Service.PostalCode do
   defp remap(active_location_sum) do
     active_location_sum
     |> Enum.map fn(map) -> from_map(map) end
-  end
-
-  def postal_code_sums_by_kind(country, category) do
-    index = "#{country}_#{category}_locations"
-    type =  "location"
-    query = Elastix.Location.Aggregation.by_postal_code_kind
-    response = Elastix.Client.execute(:search, query, index, type)
-    total = response["hits"]["total"]
-    response["aggregations"]["postal_codes_kind"]["buckets"]
-    |> buckets_to_pd_map(%{})
-    |> Map.put(:total_locations, total)
-  end
-
-  defp buckets_to_pd_map([], pd_map), do: pd_map
-  defp buckets_to_pd_map([bucket | buckets], pd_map) do
-    pd_key = bucket["key"]
-    kinds = bucket["kind"]["buckets"] |> Enum.map fn(kind)-> %{kind: kind["key"], sum: kind["doc_count"], number: pd_key} end
-    buckets_to_pd_map(buckets, Map.put(pd_map, pd_key, kinds) )
   end
 
   defp from_map({[{_, [number, kind]},{ _ , sum}]}) do
