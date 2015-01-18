@@ -30,7 +30,7 @@ defmodule Postalex.Service.Location do
     district_locations_by_postal_code(ctry_cat, kinds, postal_code, default_clients)
   end
   def district_locations_by_postal_code(ctry_cat, kinds, postal_code, clients) do
-    pd_id = PostalCode.postal_district_id(ctry_cat, postal_code, clients)
+    pd_id = clients.postal_code_client.postal_district_id(ctry_cat, postal_code, clients)
     postal_districts_locations(ctry_cat, kinds, pd_id, clients)
   end
 
@@ -51,6 +51,7 @@ defmodule Postalex.Service.Location do
     %{
       location_query: Elastix.Location.Query,
       couch_client: CouchClient,
+      postal_code_client: PostalCode,
       location_aggregation: Elastix.Location.Aggregation
     }
   end
