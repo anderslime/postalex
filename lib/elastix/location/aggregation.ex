@@ -3,7 +3,7 @@ defmodule Elastix.Location.Aggregation do
   def postal_code_sums_by_kind(country, category) do
     index = "#{country}_#{category}_locations"
     type =  "location"
-    query = Elastix.Location.Aggregation.by_postal_code_kind
+    query = by_postal_code_kind(country)
     response = Elastix.Client.execute(:search, query, index, type)
     total = response["hits"]["total"]
     response["aggregations"]["postal_codes_kind"]["buckets"]
@@ -21,7 +21,7 @@ defmodule Elastix.Location.Aggregation do
   ##############
   # Aggregations
 
-  def by_postal_code do
+  def by_postal_code(country) do
     %{
       size: 0,
       query: %{ match: %{ state: "active" } },
@@ -33,7 +33,7 @@ defmodule Elastix.Location.Aggregation do
     }
   end
 
-  def by_postal_district do
+  def by_postal_district(country) do
     %{
       size: 0,
       query: %{ match: %{ state: "active" } },
@@ -45,7 +45,7 @@ defmodule Elastix.Location.Aggregation do
     }
   end
 
-  def by_postal_code_kind do
+  def by_postal_code_kind(country) do
     %{
       size: 0,
       query: %{ match: %{ state: "active" } },
@@ -58,7 +58,7 @@ defmodule Elastix.Location.Aggregation do
     }
   end
 
-  def by_postal_district_kind do
+  def by_postal_district_kind(country) do
     %{
       size: 0,
       query: %{ match: %{ state: "active" } },
