@@ -1,10 +1,8 @@
 defmodule Elastix.Location.Aggregation do
 
   def postal_code_sums_by_kind(country, category) do
-    index = "#{country}_#{category}_locations"
-    type =  "location"
     query = by_postal_code_kind(country)
-    response = Elastix.Client.execute(:search, query, index, type)
+    response = Elastix.Client.execute(:search, query, "locations", category)
     total = response["hits"]["total"]
     response["aggregations"]["postal_codes_kind"]["buckets"]
     |> buckets_to_pd_map(%{})
@@ -24,7 +22,7 @@ defmodule Elastix.Location.Aggregation do
   def by_postal_code(country) do
     %{
       size: 0,
-      query: %{ match: %{ state: "active" } },
+      query: active_country_query(country),
       aggs: %{
         postal_codes: %{
           terms: %{ size: 0, field: :postal_code }
@@ -36,7 +34,7 @@ defmodule Elastix.Location.Aggregation do
   def by_postal_district(country) do
     %{
       size: 0,
-      query: %{ match: %{ state: "active" } },
+      query: active_country_query(country),
       aggs: %{
         postal_districts: %{
           terms: %{ size: 0, field: :postal_district_id }
@@ -48,7 +46,7 @@ defmodule Elastix.Location.Aggregation do
   def by_postal_code_kind(country) do
     %{
       size: 0,
-      query: %{ match: %{ state: "active" } },
+      query: active_country_query(country),
       aggs: %{
         postal_codes_kind: %{
           terms: %{ size: 0, field: :postal_code },
@@ -61,12 +59,23 @@ defmodule Elastix.Location.Aggregation do
   def by_postal_district_kind(country) do
     %{
       size: 0,
-      query: %{ match: %{ state: "active" } },
+      query: active_country_query(country),
       aggs: %{
         postal_district_kinds: %{
           terms: %{ size: 0, field: :postal_district_id },
           aggs: %{ kind: %{ terms: %{ field: :kind } } }
         }
+      }
+    }
+  end
+
+  defp active_country_query(country) do
+    %{
+      bool: %{
+        must: [
+          %{ match: %{ state:  "active" }},
+          %{ match: %{ country: country }}
+        ]
       }
     }
   end
