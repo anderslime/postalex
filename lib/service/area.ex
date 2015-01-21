@@ -2,19 +2,28 @@ defmodule Postalex.Service.Area do
   import CouchHelper
   alias Postalex.Service.PostalDistrict
 
-  @main_table "postal_areas"
+  @key "postal_areas"
 
   def all(country, category, []) do
-    all_areas(country, category, [])
+    all(country, category, [], default_clients)
+  end
+  def all(country, category, [], clients) do
+    all_areas(country, category, [], default_clients)
   end
 
   def all(country, category, postal_code_sums) do
-    all_areas(country, category, postal_code_sums)
+    all(country, category, postal_code_sums, default_clients)
+  end
+  def all(country, category, postal_code_sums, clients) do
+    all_areas(country, category, postal_code_sums, clients)
   end
 
   def by_slug(ctry_cat, area_slug) do
+    by_slug(ctry_cat, area_slug, default_clients)
+  end
+  def by_slug(ctry_cat, area_slug, clients) do
     %{ country: country, category: category } = ctry_cat
-    all_areas(country, category, [])
+    all_areas(country, category, [], clients)
       |> Enum.find(fn(area)-> area.slug == area_slug end)
   end
 
@@ -38,17 +47,20 @@ defmodule Postalex.Service.Area do
     summerize_postal_districts(areas, [ area | group] )
   end
 
-  defp all_areas(country, category, []) do
-    cache_key = CacheHelper.cache_key(category, @main_table)
+  defp all_areas(country, category, [], clients) do
+    cache_key = CacheHelper.cache_key(category, @key)
     country |> ConCache.get_or_store(cache_key, fn() ->
-      fetch_all_areas(country)
+      clients.couch_client.areas(country)
+        |> to_docs
     end)
   end
 
-  defp all_areas(country, category, postal_code_sums) do
-    cache_key = CacheHelper.cache_key(category, @main_table)
+  defp all_areas(country, category, postal_code_sums, clients) do
+    cache_key = CacheHelper.cache_key(category, @key)
     country |> ConCache.get_or_store(cache_key, fn() ->
-      fetch_all_areas(country) |> add_postal_code_sums(postal_code_sums, [])
+      clients.couch_client.areas(country)
+        |> add_postal_code_sums(postal_code_sums, [])
+        |> to_docs
     end)
   end
 
@@ -56,15 +68,6 @@ defmodule Postalex.Service.Area do
   defp add_postal_code_sums([area | areas], postal_code_sums, areas_with_sums) do
     area_with_sums = add_sums(area, postal_code_sums)
     add_postal_code_sums(areas, postal_code_sums, [area_with_sums | areas_with_sums])
-  end
-
-  def fetch_all_areas(country) do
-    country
-    |> db_name(@main_table)
-    |> database
-    |> Couchex.fetch_view({"lists","all"},[])
-    |> fetch_response
-    |> to_docs
   end
 
   defp to_docs(res) do
@@ -89,6 +92,8 @@ defmodule Postalex.Service.Area do
   defp to_pc({[{"postal_name", postal_name},{"postal_code", postal_code},{"type", type}]}) do
     %{postal_name: postal_name, postal_code: postal_code, type: type}
   end
+
+  defp default_clients, do: %{ couch_client: CouchClient }
 
 end
 
