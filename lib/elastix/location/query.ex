@@ -22,10 +22,23 @@ defmodule Elastix.Location.Query do
     %{ total: total(response), locations: locations(response), es_time_ms: time(response) }
   end
 
+  @doc "Full location, including description etc"
   defp map_to_loc(res) do
-    res["_source"]
-      |> Map.delete("_id")
-      |> Map.delete("_rev")
+     res["_source"] |> type_filter(["_id","_rev"])
+  end
+
+  @doc "Ligth location, for use in lists"
+  defp map_to_loc_light(res) do
+    res["_source"] |> type_filter(default_filter_types)
+  end
+
+  defp type_filter(location, []), do: location
+  defp type_filter(location, [type|types]) do
+    location |> Map.delete(type) |> type_filter(types)
+  end
+
+  defp default_filter_types do
+    ["_id","_rev","description","metadata","area_ids","postal_district_id","type","country"]
   end
 
   defp index_type(%{ country: country, category: category }) do
@@ -36,7 +49,7 @@ defmodule Elastix.Location.Query do
   defp hits(response), do: response["hits"]["hits"]
 
   defp locations(response) do
-    response |> hits |> Enum.map fn(res)-> map_to_loc(res) end
+    response |> hits |> Enum.map fn(res)-> map_to_loc_light(res) end
   end
 
   #######
