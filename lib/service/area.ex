@@ -57,11 +57,11 @@ defmodule Postalex.Service.Area do
 
   defp all_areas(country, category, postal_code_sums, clients) do
     cache_key = CacheHelper.cache_key(category, @key)
-    country |> ConCache.get_or_store(cache_key, fn() ->
-      clients.couch_client.areas(country)
-        |> to_docs
-        |> add_postal_code_sums(postal_code_sums, [])
-    end)
+    country
+      |> ConCache.get_or_store(cache_key, fn() ->
+          clients.couch_client.areas(country) |> to_docs
+        end)
+      |> add_postal_code_sums(postal_code_sums, [])
   end
 
   defp add_postal_code_sums([], _, areas_with_sums), do: areas_with_sums
