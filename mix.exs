@@ -21,7 +21,8 @@ defmodule Postalex.Mixfile do
       {:couchex, github: "ringling/couchex"},
       {:poison, github: "devinus/poison"},
       {:dotenv, "~> 0.0.4"},
-      {:exprof, "0.1.3"}
+      {:exprof, "0.1.3"},
+      { :benchwarmer, "~> 0.0.2" }
     ]
   end
 end
