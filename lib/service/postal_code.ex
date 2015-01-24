@@ -7,11 +7,8 @@ defmodule Postalex.Service.PostalCode do
     all(ctry_cat, :without_sum, default_clients)
   end
   def all(ctry_cat, :without_sum, clients) do
-    %{ country: country, category: category } = ctry_cat
-    cache_key = CacheHelper.cache_key(:without_sum, @main_table)
-    ConCache.get_or_store(country, cache_key, fn() ->
-      clients.couch_client.postal_codes(country)
-    end)
+    %{ country: country, category: _ } = ctry_cat
+    postal_codes(country, clients)
   end
 
   def all(ctry_cat, :with_sum) do
@@ -19,11 +16,8 @@ defmodule Postalex.Service.PostalCode do
   end
   def all(ctry_cat, :with_sum, clients ) do
     %{ country: country, category: category } = ctry_cat
-    cache_key = CacheHelper.cache_key(:with_sum, category, @main_table)
-    ConCache.get_or_store(country, cache_key, fn() ->
-      sums = clients.location_aggregation.postal_code_sums_by_kind(country, category)
-      clients.couch_client.postal_codes(country) |> add_sums(sums, HashDict.new)
-    end)
+    sums = clients.location_aggregation.postal_code_sums_by_kind(country, category)
+    postal_codes(country, clients) |> add_sums(sums, HashDict.new)
   end
 
   def postal_district_id(ctry_cat, postal_code) do
@@ -33,6 +27,13 @@ defmodule Postalex.Service.PostalCode do
     postal_codes_dict(ctry_cat, clients)
       |> find_postal_code(postal_code)
       |> _postal_district_id
+  end
+
+  defp postal_codes(country, clients) do
+    cache_key = CacheHelper.cache_key(:postal_codes, @main_table)
+    ConCache.get_or_store(country, cache_key, fn() ->
+      clients.couch_client.postal_codes(country)
+    end)
   end
 
   defp _postal_district_id(nil), do: nil
