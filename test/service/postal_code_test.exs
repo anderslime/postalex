@@ -62,13 +62,8 @@ defmodule Postalex.Service.PostalCodeTest do
     assert PostalCode.summarize([@pc1, @pc2]) == %{"office" => 4, "store" => 8, "warehouse" => 11}
   end
 
-  test "fetch all postal codes without sum" do
-    postalcodes = [@vejle_pc_without]
-    assert postalcodes == PostalCode.all(@ctry_cat, :without_sum, @mock_clients )
-  end
-
   test "fetch all postal codes with sum" do
-    res = PostalCode.all(@ctry_cat, :with_sum, @mock_clients)
+    res = PostalCode.all(@ctry_cat, @mock_clients)
     assert res |> HashDict.keys == [@vejle_postal_number]
     assert res |> HashDict.values == [@vejle_pc_with]
   end
