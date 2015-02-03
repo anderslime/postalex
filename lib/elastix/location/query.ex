@@ -64,8 +64,12 @@ defmodule Elastix.Location.Query do
             %{ terms: %{ postal_district_id: postal_districts } },
             %{ terms: %{ kind: kinds } },
             %{ match: %{ country: country } },
-            %{ match: %{ state: "active"}}
-          ]
+          ],
+          should: [
+            %{ match: %{ state: "active" }},
+            %{ match: %{ shown_as_rented_out: true }}
+          ],
+          minimum_should_match: 1
         }
       }
     }
@@ -85,8 +89,12 @@ defmodule Elastix.Location.Query do
               must: [
                 %{ terms: %{ kind: kinds } },
                 %{ match: %{ country: country } },
-                %{ match: %{ state: "active"}}
-              ]
+              ],
+              should: [
+                %{ match: %{ state: "active" }},
+                %{ match: %{ shown_as_rented_out: true }}
+              ],
+              minimum_should_match: 1
             }
           },
           filter: %{
@@ -98,4 +106,5 @@ defmodule Elastix.Location.Query do
       }
     }
   end
+
 end
