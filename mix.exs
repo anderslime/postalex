@@ -3,7 +3,7 @@ defmodule Postalex.Mixfile do
 
   def project do
     [app: :postalex,
-     version: "0.0.5",
+     version: "0.1.3",
      elixir: "~> 1.0",
      deps: deps]
   end
@@ -21,7 +21,8 @@ defmodule Postalex.Mixfile do
       {:couchex, github: "ringling/couchex"},
       {:poison, github: "devinus/poison"},
       {:dotenv, "~> 0.0.4"},
-      {:exprof, "0.1.3"}
+      {:exprof, "0.1.3"},
+      { :benchwarmer, "~> 0.0.2" }
     ]
   end
 end

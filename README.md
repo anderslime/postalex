@@ -94,7 +94,7 @@ CouchDB databases __must__ have the format *{country}\_{table_name}* or *{countr
 // {country}_postal_areas databases
 {
    "_id": "_design/lists",
-   "_rev": "...",
+   "_rev": "7-684689ddbf6370bee370bb18c0382f59",
    "language": "javascript",
    "views": {
        "all": {
@@ -102,6 +102,9 @@ CouchDB databases __must__ have the format *{country}\_{table_name}* or *{countr
        },
        "postal_codes": {
            "map": "function(doc) {\n  pds = doc.postal_districts\n  for(i=0;i<pds.length;i++){\n    pcs = pds[i].postal_codes\n    for(j=0;j<pcs.length;j++){\n      data = { postal_name: pcs[j].postal_name, postal_code: pcs[j].postal_code, type: pcs[j].type, postal_district_id: pds[i].id}\n      emit(pcs[j].postal_code, data );\n    }\n  }\n}"
+       },
+       "postal_districts": {
+           "map": "function(doc) {\n  pds = doc.postal_districts\n  for(i=0;i<pds.length;i++){\n    pd = pds[i]\n    emit(pd.id, {id: pd.id, name: pd.name, slug: pd.slug, key: pd.key } );\n  }\n}"
        }
    }
 }
