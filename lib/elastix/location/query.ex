@@ -38,7 +38,7 @@ defmodule Elastix.Location.Query do
   end
 
   defp default_filter_types do
-    ["_id","_rev","description","metadata","area_ids","postal_district_id","type","country"]
+    ["_id", "_rev", "description", "metadata", "area_ids", "type", "country"]
   end
 
   defp index_type(%{ country: country, category: category }) do
