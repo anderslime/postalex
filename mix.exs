@@ -18,7 +18,7 @@ defmodule Postalex.Mixfile do
       {:ibrowse, github: "cmullaparthi/ibrowse", tag: "v4.1.0"},
       {:httpotion, "~> 1.0.0"},
       {:con_cache, "~> 0.6.0"},
-      {:couchex, github: "ringling/couchex"},
+      {:couchex, github: "ringling/couchex", tag: "v0.1"},
       {:poison, github: "devinus/poison"},
       {:dotenv, "~> 0.0.4"},
       {:exprof, "0.1.3"},
