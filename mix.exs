@@ -3,7 +3,7 @@ defmodule Postalex.Mixfile do
 
   def project do
     [app: :postalex,
-     version: "0.1.3",
+     version: "0.1.6",
      elixir: "~> 1.0",
      deps: deps]
   end
