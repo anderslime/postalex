@@ -1,7 +1,7 @@
 %{"benchwarmer": {:hex, :benchwarmer, "0.0.2"},
   "con_cache": {:hex, :con_cache, "0.6.1"},
   "couchbeam": {:git, "git://github.com/benoitc/couchbeam.git", "a20517d415486dea4185781483361e0188289d85", [tag: "1.1.6"]},
-  "couchex": {:git, "git://github.com/ringling/couchex.git", "781c6fcc7f005a19d50e5d1ff6ba6e867bf3af48", []},
+  "couchex": {:git, "git://github.com/ringling/couchex.git", "85b399ff0f0c689242c625bcecf2779c2090ce6d", [tag: "v0.1"]},
   "dotenv": {:hex, :dotenv, "0.0.4"},
   "exactor": {:hex, :exactor, "1.0.0"},
   "exprintf": {:hex, :exprintf, "0.1.5"},
