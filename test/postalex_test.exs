@@ -1,6 +1,5 @@
 defmodule PostalexTest do
   use ExUnit.Case
-  alias Postalex.Service.PostalCode
   require Logger
 
   test "the truth" do

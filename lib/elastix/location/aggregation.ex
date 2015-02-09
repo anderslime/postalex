@@ -5,11 +5,11 @@ defmodule Elastix.Location.Aggregation do
     response = Elastix.Client.execute(:search, query, "locations", category)
     total = response["hits"]["total"]
     response["aggregations"]["postal_codes_kind"]["buckets"]
-    |> buckets_to_pd_map(%{})
-    |> Map.put(:total_locations, total)
+      |> buckets_to_pd_map(%{})
+      |> Map.put(:total_locations, total)
   end
 
-  defp buckets_to_pd_map([], pd_map), do: pd_map
+  defp buckets_to_pd_map([],                 pd_map), do: pd_map
   defp buckets_to_pd_map([bucket | buckets], pd_map) do
     pd_key = bucket["key"]
     kinds = bucket["kind"]["buckets"] |> Enum.map fn(kind)-> %{kind: kind["key"], sum: kind["doc_count"], number: pd_key} end
@@ -73,13 +73,15 @@ defmodule Elastix.Location.Aggregation do
     %{
       bool: %{
         must: [
+          %{ match: %{ country: country }},
+        ],
+        should: [
           %{ match: %{ state:  "active" }},
-          %{ match: %{ country: country }}
-        ]
+          %{ match: %{ shown_as_rented_out:  true }},
+        ],
+        minimum_should_match: 1
       }
     }
   end
 
 end
-
-
