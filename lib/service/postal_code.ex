@@ -1,11 +1,12 @@
 defmodule Postalex.Service.PostalCode do
   import CouchHelper
 
-  def all(ctry_cat), do: all(ctry_cat, default_clients)
-  def all(ctry_cat, clients ) do
-    %{ country: country, category: category } = ctry_cat
-    sums = clients.location_aggregation.postal_code_sums_by_kind(country, category)
-    postal_codes(country, clients) |> add_sums(sums, HashDict.new)
+  def all(ctry_cat, %{stale: stale, couch_client: cc, location_aggregation: la}) do
+    sums = stale |> postal_code_sums(ctry_cat, la)
+    postal_codes(ctry_cat.country, cc) |> add_sums(sums, HashDict.new)
+  end
+  def all(ctry_cat, %{stale: stale}) do
+    all(ctry_cat, Map.merge(default_clients, %{stale: stale}))
   end
 
   def postal_district_id(ctry_cat, postal_code) do
@@ -13,7 +14,7 @@ defmodule Postalex.Service.PostalCode do
   end
   def postal_district_id(ctry_cat, postal_code, clients) do
     ctry_cat
-      |> postal_codes_dict(clients)
+      |> postal_codes_dict(clients.couch_client)
       |> find_postal_code(postal_code)
       |> Map.get(:postal_district_id)
   end
@@ -57,15 +58,31 @@ defmodule Postalex.Service.PostalCode do
     sums |> Enum.map(fn(sum)-> Map.delete(sum, field) end)
   end
 
-  defp postal_codes(country, clients) do
+  defp postal_codes(country, couch_client) do
     ConCache.get_or_store(country, "postal_codes", fn() ->
-      clients.couch_client.postal_codes(country)
+      couch_client.postal_codes(country)
     end)
   end
 
-  defp postal_codes_dict(%{ country: country, category: _}, clients) do
+  defp postal_code_sums(true, %{country: country, category: category}, location_aggregation) do
+    sums = ConCache.get_or_store(country, "postal_code_sums", fn() ->
+      postal_code_sums(false, %{country: country, category: category}, location_aggregation)
+    end)
+    spawn(Postalex.Service.PostalCode, :update_sums_cache, [country, category, location_aggregation])
+    sums
+  end
+  defp postal_code_sums(false, %{country: country, category: category}, location_aggregation) do
+    location_aggregation.postal_code_sums_by_kind(country, category)
+  end
+
+  def update_sums_cache(country, category, location_aggregation) do
+    sums = location_aggregation.postal_code_sums_by_kind(country, category)
+    ConCache.put(country, "postal_code_sums", sums)
+  end
+
+  defp postal_codes_dict(%{ country: country, category: _}, couch_client) do
     ConCache.get_or_store(country, "postal_code_dict", fn() ->
-      postal_codes(country, clients)
+      postal_codes(country, couch_client)
         |> Enum.reduce(HashDict.new, fn(x, acc)-> HashDict.put(acc, x.number, x)  end)
     end)
   end

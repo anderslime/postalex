@@ -25,7 +25,7 @@ defmodule PostalexTest do
     # IO.inspect Postalex.Server.execute(:search, query, "#{country}_#{category}_locations", "location")
     # Postalex.Server.locations(country: country, category: category, kinds: [:warehouse], postal_districts: ["2800", "2850"])
 
-    IO.inspect Postalex.Server.locations(%{country: country, category: category}, kinds: kinds, postal_districts: postal_districts)
+    # IO.inspect Postalex.Server.locations(%{country: country, category: category}, kinds: kinds, postal_districts: postal_districts)
 
   end
 
