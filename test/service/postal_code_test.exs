@@ -63,7 +63,7 @@ defmodule Postalex.Service.PostalCodeTest do
   end
 
   test "fetch all postal codes with sum" do
-    res = PostalCode.all(@ctry_cat, @mock_clients)
+    res = @ctry_cat |> PostalCode.all(@mock_clients |> Map.put(:stale, true))
     assert res |> HashDict.keys == [@vejle_postal_number]
     assert res |> HashDict.values == [@vejle_pc_with]
   end

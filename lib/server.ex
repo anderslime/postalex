@@ -98,8 +98,8 @@ defmodule Postalex.Server do
   end
 
   def handle_call({:areas, ctry_cat, group}, _from, state) do
-    postal_code_sums = Postalex.Service.PostalCode.all(ctry_cat)
-    areas = Postalex.Service.Area.summarized(ctry_cat, group, postal_code_sums)
+    postal_code_sums = ctry_cat |> Postalex.Service.PostalCode.all(%{stale: true})
+    areas = ctry_cat |> Postalex.Service.Area.summarized(group, postal_code_sums)
     {:reply, areas, state}
   end
 
