@@ -65,7 +65,7 @@ defmodule Postalex.Service.PostalCode do
   end
 
   defp postal_code_sums(true, %{country: country, category: category}, location_aggregation) do
-    sums = ConCache.get_or_store(country, "postal_code_sums", fn() ->
+    sums = ConCache.get_or_store(country, "postal_code_sums_#{category}", fn() ->
       postal_code_sums(false, %{country: country, category: category}, location_aggregation)
     end)
     spawn(Postalex.Service.PostalCode, :update_sums_cache, [country, category, location_aggregation])
@@ -77,7 +77,7 @@ defmodule Postalex.Service.PostalCode do
 
   def update_sums_cache(country, category, location_aggregation) do
     sums = location_aggregation.postal_code_sums_by_kind(country, category)
-    ConCache.put(country, "postal_code_sums", sums)
+    ConCache.put(country, "postal_code_sums_#{category}", sums)
   end
 
   defp postal_codes_dict(%{ country: country, category: _}, couch_client) do
