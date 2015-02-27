@@ -10,13 +10,20 @@ defmodule Postalex.Service.PostalCode do
   end
 
   def postal_district_id(ctry_cat, postal_code) do
-    ctry_cat |> postal_district_id(postal_code, default_clients)
+    postal_district_id(ctry_cat, postal_code, default_clients)
   end
   def postal_district_id(ctry_cat, postal_code, clients) do
+    fetch_postal_district(ctry_cat, postal_code, clients)
+    |> Map.get(:postal_district_id)
+  end
+
+  def fetch_postal_district(ctry_cat, postal_code) do
+    fetch_postal_district(ctry_cat, postal_code, default_clients)
+  end
+  def fetch_postal_district(ctry_cat, postal_code, clients) do
     ctry_cat
-      |> postal_codes_dict(clients.couch_client)
-      |> find_postal_code(postal_code)
-      |> Map.get(:postal_district_id)
+    |> postal_codes_dict(clients.couch_client)
+    |> find_postal_code(postal_code)
   end
 
   def summarize(postal_codes), do: postal_codes |> summarize(%{})
@@ -80,10 +87,12 @@ defmodule Postalex.Service.PostalCode do
     ConCache.put(country, "postal_code_sums_#{category}", sums)
   end
 
-  defp postal_codes_dict(%{ country: country, category: _}, couch_client) do
-    ConCache.get_or_store(country, "postal_code_dict", fn() ->
+  defp postal_codes_dict(%{country: country}, couch_client) do
+    ConCache.get_or_store(country, "postal_code_dict", fn ->
       postal_codes(country, couch_client)
-        |> Enum.reduce(HashDict.new, fn(x, acc)-> HashDict.put(acc, x.number, x)  end)
+      |> Enum.reduce(HashDict.new, fn(x, acc) ->
+        HashDict.put(acc, x.number, x)
+      end)
     end)
   end
 

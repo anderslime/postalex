@@ -73,4 +73,8 @@ defmodule Postalex.Service.PostalCodeTest do
     assert nil == PostalCode.postal_district_id(@ctry_cat, "666", @mock_clients)
   end
 
+  test "get postal_district" do
+    assert @vejle_pc_without == PostalCode.fetch_postal_district(@ctry_cat, @vejle_postal_number, @mock_clients)
+    assert nil == PostalCode.postal_district_id(@ctry_cat, "666", @mock_clients)
+  end
 end
