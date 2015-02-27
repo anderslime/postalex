@@ -13,6 +13,14 @@ defmodule Postalex.Service.PostalCode do
     ctry_cat |> postal_district_id(postal_code, default_clients)
   end
   def postal_district_id(ctry_cat, postal_code, clients) do
+    fetch_postal_district(ctry_cat, postal_code, clients)
+    |> Map.get(:postal_district_id)
+  end
+
+  def fetch_postal_district(ctry_cat, postal_code) do
+    fetch_postal_district(ctry_cat, postal_code, default_clients)
+  end
+  def fetch_postal_district(ctry_cat, postal_code, clients) do
     ctry_cat
       |> postal_codes_dict(clients.couch_client)
       |> find_postal_code(postal_code)
