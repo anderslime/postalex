@@ -57,7 +57,7 @@ defmodule Elastix.Location.Query do
   #######
   # Query
 
-  def postal_district_query(country, kinds, postal_districts, options \\ %{size: 1000}) do
+  def postal_district_query(country, kinds, postal_districts, options \\ %{size: 5000}) do
     %{
       size: options.size,
       query: %{
@@ -81,7 +81,7 @@ defmodule Elastix.Location.Query do
   bottom_left: %{ lat: 55.802848, lon: 12.50896 }
   top_right: %{  lat: 55.833961, lon: 12.570393 }
   """
-  def bounding_box(country, kinds, bottom_left, top_right, options \\ %{size: 1000}) do
+  def bounding_box(country, kinds, bottom_left, top_right, options \\ %{size: 5000}) do
     %{
       size: options.size,
       query: %{
