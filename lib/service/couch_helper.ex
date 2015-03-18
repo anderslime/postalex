@@ -20,13 +20,18 @@ defmodule CouchHelper do
   end
 
   def server_connection do
-    couchdb_url = System.get_env["COUCH_SERVER_URL"]
+    System.get_env["COUCH_SERVER_URL"]
+      |> Couchex.server_connection(credentials)
+  end
+
+  defp credentials do
     user = System.get_env["COUCH_USER"]
     pass = System.get_env["COUCH_PASS"]
-
-    couchdb_url
-      |> Couchex.server_connection([{:basic_auth, {user, pass}}])
+    parse_credentials(user, pass)
   end
+
+  defp parse_credentials(nil, _), do: []
+  defp parse_credentials(user, pass), do: [{:basic_auth, {user, pass}}]
 
   defp _response({:error, _}), do: {:error, "couchdb"}
   defp _response({:ok,    _}), do: {:ok,    "couchdb"}
