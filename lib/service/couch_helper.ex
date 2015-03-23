@@ -1,7 +1,7 @@
 defmodule CouchHelper do
 
   def ping do
-    server_connection |> Couchex.server_info |> _response
+    server_connection |> Couchex.server_info |> parse_response
   end
 
   def value({[_,_,{_,value}]}), do: value
@@ -20,15 +20,20 @@ defmodule CouchHelper do
   end
 
   def server_connection do
-    couchdb_url = System.get_env["COUCH_SERVER_URL"]
-    user = System.get_env["COUCH_USER"]
-    pass = System.get_env["COUCH_PASS"]
-
-    couchdb_url
-      |> Couchex.server_connection([{:basic_auth, {user, pass}}])
+    System.get_env["COUCH_SERVER_URL"]
+      |> Couchex.server_connection(credentials)
   end
 
-  defp _response({:error, _}), do: {:error, "couchdb"}
-  defp _response({:ok,    _}), do: {:ok,    "couchdb"}
+  defp credentials do
+    user = System.get_env["COUCH_USER"]
+    pass = System.get_env["COUCH_PASS"]
+    parse_credentials(user, pass)
+  end
+
+  defp parse_credentials(nil, _), do: []
+  defp parse_credentials(user, pass), do: [{:basic_auth, {user, pass}}]
+
+  defp parse_response({:error, _}), do: {:error, "couchdb"}
+  defp parse_response({:ok,    _}), do: {:ok,    "couchdb"}
 
 end
