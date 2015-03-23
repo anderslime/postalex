@@ -21,7 +21,7 @@ defmodule CouchHelper do
 
   def server_connection do
     System.get_env["COUCH_SERVER_URL"]
-      |> Couchex.server_connection(credentials)
+    |> Couchex.server_connection(credentials)
   end
 
   defp credentials do
