@@ -1,7 +1,7 @@
 defmodule CouchHelper do
 
   def ping do
-    server_connection |> Couchex.server_info |> response
+    server_connection |> Couchex.server_info |> parse_response
   end
 
   def value({[_,_,{_,value}]}), do: value
@@ -33,7 +33,7 @@ defmodule CouchHelper do
   defp parse_credentials(nil, _), do: []
   defp parse_credentials(user, pass), do: [{:basic_auth, {user, pass}}]
 
-  defp response({:error, _}), do: {:error, "couchdb"}
-  defp response({:ok,    _}), do: {:ok,    "couchdb"}
+  defp parse_response({:error, _}), do: {:error, "couchdb"}
+  defp parse_response({:ok,    _}), do: {:ok,    "couchdb"}
 
 end
