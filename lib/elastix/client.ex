@@ -18,6 +18,13 @@ defmodule Elastix.Client do
   end
   def execute(_, _, _, _), do: {:error, :undef_query_type}
 
+  def mapping(index, type) do
+    "#{@elastic_url}/#{index}/_mapping/#{type}"
+    |> HTTPotion.get
+    |> body
+    |> Poison.decode!
+  end
+
   defp post(url, query) do
     HTTPotion.post(url, Poison.Encoder.encode(query, []))
   end
