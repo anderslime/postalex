@@ -1,5 +1,5 @@
 defmodule Elastix.Client do
-  @elastic_url System.get_env["ELASTIC_SERVER_URL"]
+  @elastic_url Application.get_env(:postalex, :elastic_server_url)
 
   def ping do
     try do
