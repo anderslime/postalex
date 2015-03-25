@@ -25,7 +25,7 @@ use Mix.Config
 
 config :postalex,
   elastic_server_url: System.get_env("ELASTIC_SERVER_URL") ||
-    "http://localhost:9200"
+    "http://localhost:9200",
   couch_server_url: System.get_env("COUCH_SERVER_URL") ||
     "http://localhost:5984",
   couch_user: System.get_env("COUCH_USER"),
