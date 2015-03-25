@@ -20,13 +20,13 @@ defmodule CouchHelper do
   end
 
   def server_connection do
-    System.get_env["COUCH_SERVER_URL"]
+    Application.get_env(:postalex, :couch_server_url)
     |> Couchex.server_connection(credentials)
   end
 
   defp credentials do
-    user = System.get_env["COUCH_USER"]
-    pass = System.get_env["COUCH_PASS"]
+    user = Application.get_env(:postalex, :couch_user)
+    pass = Application.get_env(:postalex, :couch_pass)
     parse_credentials(user, pass)
   end
 
