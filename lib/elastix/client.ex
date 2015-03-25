@@ -10,9 +10,9 @@ defmodule Elastix.Client do
 
   def execute(:search, query, index, type) do
     "#{elastic_url}/#{index}/#{type}/_search"
-      |> post(query)
-      |> body
-      |> Poison.decode!
+    |> post(query)
+    |> body
+    |> Poison.decode!
   end
   def execute(_, _, _, _), do: {:error, :undef_query_type}
 
