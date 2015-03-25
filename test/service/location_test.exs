@@ -56,13 +56,13 @@ defmodule Postalex.Service.LocationTest do
       bottom_left: %{ lat: 55.802848, lon: 12.50896 },
       top_right: %{  lat: 55.833961, lon: 12.570393 }
     }
-    def locations(:postal_districts, @ctry_cat, @kinds, ["2850"]) do
+    def locations(:postal_districts, @ctry_cat, @kinds, ["2850"], []) do
       ["LOCATIONS_BY_POSTAL_DISTRICT"]
     end
-    def locations(:postal_districts, @ctry_cat, @kinds, ["3740", "3751"]) do
+    def locations(:postal_districts, @ctry_cat, @kinds, ["3740", "3751"], []) do
       ["LOCATIONS_BY_AREA_SLUG"]
     end
-    def locations(:bounding_box, @ctry_cat, @kinds, @bounding_box) do
+    def locations(:bounding_box, @ctry_cat, @kinds, [], @bounding_box) do
       ["LOCATIONS_BY_BOUNDING_BOX"]
     end
   end
@@ -84,23 +84,23 @@ defmodule Postalex.Service.LocationTest do
 
   test "find_by_area_slug(ctry_cat, kinds, area_slug, clients)" do
     assert ["LOCATIONS_BY_AREA_SLUG"] ==
-      Postalex.Service.Location.find_by_area_slug(@ctry_cat, [:warehouse], "bornholm", @mock_clients)
+      Postalex.Service.Location.find_by_area_slug(@ctry_cat, [:warehouse], "bornholm", [], @mock_clients)
   end
 
   test "raise RuntimeError if Area not found by slug" do
     assert_raise RuntimeError, "Area with slug 'nordsjaelland' not found", fn ->
-      Postalex.Service.Location.find_by_area_slug(@ctry_cat, [:warehouse], "nordsjaelland", @mock_clients)
+      Postalex.Service.Location.find_by_area_slug(@ctry_cat, [:warehouse], "nordsjaelland", [], @mock_clients)
     end
   end
 
   test "by_bounding_box(ctry_cat, kinds, bounding_box)" do
     assert ["LOCATIONS_BY_BOUNDING_BOX"] ==
-      Postalex.Service.Location.by_bounding_box(@ctry_cat, [:warehouse], @bounding_box, @mock_clients)
+      Postalex.Service.Location.by_bounding_box(@ctry_cat, [:warehouse], @bounding_box, [], @mock_clients)
   end
 
   test "district_locations_by_postal_code(ctry_cat, kinds, postal_code, clients)" do
     assert ["LOCATIONS_BY_POSTAL_DISTRICT"] ==
-      Postalex.Service.Location.district_locations_by_postal_code(@ctry_cat, [:warehouse], "2850", @mock_clients)
+      Postalex.Service.Location.district_locations_by_postal_code(@ctry_cat, [:warehouse], "2850", [], @mock_clients)
   end
 
 end
