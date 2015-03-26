@@ -15,11 +15,11 @@ defmodule Elastix.Location.Query do
 
   defp execute(query, { index, type }) do
     ESClient.execute(:search, query, index, type)
-      |> location_response
+    |> location_response
   end
 
-  defp location_response(nil),     do: %{}
-  defp location_response(response) do
+  defp location_response(%{"error" => _}), do: %{}
+  defp location_response(response)         do
     %{
       total: total(response),
       locations: locations(response),
