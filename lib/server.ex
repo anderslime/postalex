@@ -23,11 +23,11 @@ defmodule Postalex.Server do
     GenServer.call(__MODULE__, {:areas, ctry_cat, group})
   end
 
-  def locations(ctry_cat, kinds: kinds, area_slug: area_slug, sort: sort) do
-     GenServer.call(__MODULE__, {:locations, ctry_cat, kinds: kinds, area_slug: area_slug, sort: sort})
+  def locations(ctry_cat, kinds: kinds, area_slug: area_slug) do
+     GenServer.call(__MODULE__, {:locations, ctry_cat, kinds: kinds, area_slug: area_slug })
   end
-  def locations(ctry_cat, kinds: kinds, postal_district_slug: postal_district_slug, sort: sort) do
-     GenServer.call(__MODULE__, {:locations, ctry_cat, kinds: kinds, postal_district_slug: postal_district_slug, sort: sort})
+  def locations(ctry_cat, kinds: kinds, postal_district_slug: postal_district_slug) do
+     GenServer.call(__MODULE__, {:locations, ctry_cat, kinds: kinds, postal_district_slug: postal_district_slug })
   end
 
   @doc """
@@ -35,20 +35,20 @@ defmodule Postalex.Server do
   bounding_box = %{ bottom_left: bottom_left, top_right: top_right }
   kinds = [:warehouse, :office]
   ctry_cat = %{country: :dk, category: :lease}
-  locations(ctry_cat, kinds: kinds, bounding_box: bounding_box, sort: sort)
+  locations(ctry_cat, kinds: kinds, bounding_box: bounding_box)
   """
-  def locations(ctry_cat, kinds: kinds, bounding_box: bounding_box, sort: sort) do
-    GenServer.call(__MODULE__, {:locations, ctry_cat, kinds: kinds, bounding_box: bounding_box, sort: sort})
+  def locations(ctry_cat, kinds: kinds, bounding_box: bounding_box) do
+    GenServer.call(__MODULE__, {:locations, ctry_cat, kinds: kinds, bounding_box: bounding_box })
   end
 
   @doc "Returns locations situated within postal districts of List"
-  def locations(ctry_cat, kinds: kinds, postal_districts: postal_districts, sort: sort) do
-    GenServer.call(__MODULE__, {:locations, ctry_cat, kinds: kinds, postal_districts: postal_districts, sort: sort})
+  def locations(ctry_cat, kinds: kinds, postal_districts: postal_districts) do
+    GenServer.call(__MODULE__, {:locations, ctry_cat, kinds: kinds, postal_districts: postal_districts })
   end
 
   @doc "Returns all locations of the district in which postal_code is situated"
-  def district_locations(ctry_cat, kinds: kinds, postal_code: postal_code, sort: sort) do
-    GenServer.call(__MODULE__, {:district_locations, ctry_cat, kinds: kinds, postal_code: postal_code, sort: sort})
+  def district_locations(ctry_cat, kinds: kinds, postal_code: postal_code ) do
+    GenServer.call(__MODULE__, {:district_locations, ctry_cat, kinds: kinds, postal_code: postal_code})
   end
 
   @doc "Generic search query function"
@@ -66,8 +66,8 @@ defmodule Postalex.Server do
     {:reply, [CouchHelper.ping, Elastix.Client.ping], state}
   end
 
-  def handle_call({:district_locations, ctry_cat, kinds: kinds, postal_code: postal_code, sort: sort}, _from, state) do
-    results = Postalex.Service.Location.district_locations_by_postal_code(ctry_cat, kinds, postal_code, %{sort: sort})
+  def handle_call({:district_locations, ctry_cat, kinds: kinds, postal_code: postal_code}, _from, state) do
+    results = Postalex.Service.Location.district_locations_by_postal_code(ctry_cat, kinds, postal_code)
     {:reply, results, state}
   end
 
@@ -76,24 +76,24 @@ defmodule Postalex.Server do
     {:reply, results, state}
   end
 
-  def handle_call({:locations, ctry_cat, kinds: kinds, area_slug: area_slug, sort: sort}, _from, state) do
-    results = Postalex.Service.Location.find_by_area_slug(ctry_cat, kinds, area_slug, %{sort: sort})
+  def handle_call({:locations, ctry_cat, kinds: kinds, area_slug: area_slug}, _from, state) do
+    results = Postalex.Service.Location.find_by_area_slug(ctry_cat ,kinds, area_slug)
     {:reply, results, state}
   end
 
-  def handle_call({:locations, ctry_cat, kinds: kinds, postal_district_slug: postal_district_slug, sort: sort}, _from, state) do
+  def handle_call({:locations, ctry_cat, kinds: kinds, postal_district_slug: postal_district_slug}, _from, state) do
     postal_district = Postalex.Service.PostalDistrict.find_by_slug(ctry_cat, postal_district_slug)
-    results = Postalex.Service.Location.find(ctry_cat, kinds, [postal_district], %{sort: sort})
+    results = Postalex.Service.Location.find(ctry_cat ,kinds, [postal_district])
     {:reply, results, state}
   end
 
-  def handle_call({:locations, ctry_cat, kinds: kinds, bounding_box: bounding_box, sort: sort}, _from, state) do
-    results = Postalex.Service.Location.by_bounding_box(ctry_cat, kinds, bounding_box, %{sort: sort})
+  def handle_call({:locations, ctry_cat, kinds: kinds, bounding_box: bounding_box}, _from, state) do
+    results = Postalex.Service.Location.by_bounding_box(ctry_cat, kinds, bounding_box)
     {:reply, results, state}
   end
 
-  def handle_call({:locations, ctry_cat, kinds: kinds, postal_districts: postal_districts, sort: sort}, _from, state) do
-    results = Postalex.Service.Location.find(ctry_cat, kinds, postal_districts, %{sort: sort})
+  def handle_call({:locations, ctry_cat, kinds: kinds, postal_districts: postal_districts}, _from, state) do
+    results = Postalex.Service.Location.find(ctry_cat ,kinds, postal_districts)
     {:reply, results, state}
   end
 

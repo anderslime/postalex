@@ -1,25 +1,21 @@
 defmodule Elastix.Location.Query do
   alias Elastix.Client, as: ESClient
 
-  @default_options %{size: 500, sort: [%{created_at: "desc"}]}
-
-  def locations(sym, ctry_cat, kinds, arguments, options \\ %{})
-
-  def locations(:postal_districts, ctry_cat, kinds, postal_districts, options) do
-    %{country: country, category: _} = ctry_cat
-    postal_district_query(country, kinds, postal_districts, options)
-    |> execute(index_type(ctry_cat))
+  def locations(:postal_districts, ctry_cat, kinds, postal_districts) do
+    %{ country: country, category: _ } = ctry_cat
+    postal_district_query(country, kinds, postal_districts)
+      |> execute(index_type(ctry_cat))
   end
 
-  def locations(:bounding_box, ctry_cat, kinds, bounding_box, options) do
-    %{country: country, category: _} = ctry_cat
-    bounding_box(country, kinds, bounding_box.bottom_left, bounding_box.top_right, options)
-    |> execute(index_type(ctry_cat))
+  def locations(:bounding_box, ctry_cat, kinds, bounding_box) do
+    %{ country: country, category: _ } = ctry_cat
+    bounding_box(country, kinds, bounding_box.bottom_left, bounding_box.top_right)
+      |> execute(index_type(ctry_cat))
   end
 
   defp execute(query, { index, type }) do
     ESClient.execute(:search, query, index, type)
-    |> location_response
+      |> location_response
   end
 
   defp location_response(nil),     do: %{}
@@ -61,14 +57,16 @@ defmodule Elastix.Location.Query do
 
   #######
   # Query
-  def postal_district_query(country, kinds, postal_districts, options \\ %{}) do
+
+  def postal_district_query(country, kinds, postal_districts, options \\ %{size: 5000}) do
     %{
+      size: options.size,
       query: %{
         bool: %{
           must: [
             %{ terms: %{ postal_district_id: postal_districts } },
             %{ terms: %{ kind: kinds } },
-            %{ match: %{ country: country } }
+            %{ match: %{ country: country } },
           ],
           should: [
             %{ match: %{ state: "active" }},
@@ -78,23 +76,22 @@ defmodule Elastix.Location.Query do
         }
       }
     }
-    |> Map.merge(@default_options)
-    |> Map.merge(options)
   end
 
   @doc """
   bottom_left: %{ lat: 55.802848, lon: 12.50896 }
   top_right: %{  lat: 55.833961, lon: 12.570393 }
   """
-  def bounding_box(country, kinds, bottom_left, top_right, options \\ %{}) do
+  def bounding_box(country, kinds, bottom_left, top_right, options \\ %{size: 5000}) do
     %{
+      size: options.size,
       query: %{
         filtered: %{
           query: %{
             bool: %{
               must: [
                 %{ terms: %{ kind: kinds } },
-                %{ match: %{ country: country } }
+                %{ match: %{ country: country } },
               ],
               should: [
                 %{ match: %{ state: "active" }},
@@ -111,7 +108,6 @@ defmodule Elastix.Location.Query do
         }
       }
     }
-    |> Map.merge(@default_options)
-    |> Map.merge(options)
   end
+
 end
