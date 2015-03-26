@@ -22,6 +22,7 @@ defmodule Elastix.Location.Query do
     |> location_response
   end
 
+  defp location_response(nil),     do: %{}
   defp location_response(response) do
     %{
       total: total(response),
