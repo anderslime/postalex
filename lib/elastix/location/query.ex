@@ -70,7 +70,7 @@ defmodule Elastix.Location.Query do
           ],
           should: [
             %{ match: %{ state: "active" }},
-            %{ match: %{ shown_as_rented_out: true }}
+            %{ range: %{ show_as_rented_out_until: %{ from: "now" } } }
           ],
           minimum_should_match: 1
         }
@@ -95,7 +95,7 @@ defmodule Elastix.Location.Query do
               ],
               should: [
                 %{ match: %{ state: "active" }},
-                %{ match: %{ shown_as_rented_out: true }}
+                %{ range: %{ show_as_rented_out_until: %{ from: "now" } } }
               ],
               minimum_should_match: 1
             }
