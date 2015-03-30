@@ -12,7 +12,7 @@ defmodule Postalex do
       worker(Postalex.Server, [[]])
     ]
 
-    opts = [strategy: :one_for_one, name: Postalex.Supervisor]
+    opts = [strategy: :one_for_one, name: Postalex.Supervisor, max_restarts: 1000, max_seconds: 10]
     Supervisor.start_link(children, opts)
   end
 
