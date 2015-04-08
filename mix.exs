@@ -22,6 +22,7 @@ defmodule Postalex.Mixfile do
       {:poison, github: "devinus/poison"},
       {:dotenv, "~> 0.0.4"},
       {:exprof, "0.1.3"},
+      {:mock, "~> 0.1.0"},
       { :benchwarmer, "~> 0.0.2" }
     ]
   end

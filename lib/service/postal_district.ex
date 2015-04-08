@@ -13,6 +13,10 @@ defmodule Postalex.Service.PostalDistrict do
     all(ctry_cat) |> Enum.find fn(pd)-> pd.slug == postal_district_slug end
   end
 
+  def find_by_key(ctry_cat, key) do
+    all(ctry_cat) |> Enum.find fn(pd)-> pd.key == key end
+  end
+
   def summarize(pds),             do: summarize(pds, %{})
   defp summarize([], sum),        do: sum
   defp summarize([pd | pds], sum) do
