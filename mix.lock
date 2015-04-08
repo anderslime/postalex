@@ -11,6 +11,8 @@
   "ibrowse": {:git, "git://github.com/cmullaparthi/ibrowse.git", "7871e2ebe8811efb64e1917e2de455fa87e8dfe3", [tag: "v4.1.0"]},
   "idna": {:git, "https://github.com/benoitc/erlang-idna", "5089240e653ce254273da9cff57952a60b1d2c51", [tag: "1.0.1"]},
   "jsx": {:git, "git://github.com/talentdeficit/jsx.git", "4d549dd8a990e282c3d57c5f73213674c05ebf07", [tag: "v2.1.1"]},
+  "meck": {:hex, :meck, "0.8.2"},
+  "mock": {:hex, :mock, "0.1.0"},
   "oauth": {:git, "git://github.com/refuge/erlang-oauth.git", "d50a78688b6b489ae0a57799519b88f3b9f81401", [ref: "master"]},
   "poison": {:git, "git://github.com/devinus/poison.git", "b5b8f74b440a52debbc31fae1288c929fb88164f", []},
   "ssl_verify_hostname": {:git, "https://github.com/benoitc/ssl_verify_hostname", "3e7179789603057e3ec1867802c74c7bf6f8528a", [tag: "1.0.0"]}}
