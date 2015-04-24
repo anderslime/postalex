@@ -58,7 +58,7 @@ defmodule Postalex.Service.Area do
   end
 
   defp to_docs(res) do
-    res |> Enum.map fn(map)-> value(map) |> to_area end
+    res |> Enum.map fn(map)-> value(map) |> to_map |> to_area end
   end
 
   defp add_sums(area, pc_sums) do
@@ -66,21 +66,25 @@ defmodule Postalex.Service.Area do
     area |> Map.put(:postal_districts, pds) |> Map.delete(:type)
   end
 
-  defp to_area({[_,_,{"type", type},{"id", id},{"name", name},{"postal_districts", pds},{"slug", slug} | _]}) do
-    pds = pds |> Enum.map fn(map)-> to_pd(map) end
-    %{ type: type, id: id, slug: slug, name: name, postal_districts: pds}
+  defp to_area(%{"id" => id, "type" => type, "name" => name, "slug" => slug, "postal_districts" => pds}) do
+    pds = pds |> Enum.map fn(touple_list)-> touple_list |> to_map |> to_pd end
+    %{type: type, id: id, slug: slug, name: name, postal_districts: pds}
   end
 
-  defp to_pd({[{"type", type},{"name", name},{"id", id},{"postal_codes", pcs},{"slug", slug},{"key", key}]}) do
-    pcs = pcs |> Enum.map fn(map)-> to_pc(map) end
+  defp to_pd(%{"type" => type, "name" => name, "id" => id, "postal_codes" => pcs, "slug" => slug, "key" => key}) do
+    pcs = pcs |> Enum.map fn(touple_list)-> touple_list |> to_map |> to_pc end
     %{type: type, name: name, id: id, slug: slug, key: key, postal_codes: pcs}
   end
 
-  defp to_pc({[{"postal_name", pn},{"postal_code", pc},{"type", type}]}) do
+  defp to_pc(%{"postal_name" => pn, "postal_code" => pc, "type" => type}) do
     %{postal_name: pn, postal_code: pc, type: type}
   end
 
   defp default_clients, do: %{ couch_client: CouchClient }
+
+  defp to_map({touples}) do
+    touples |> Enum.into %{}
+  end
 
 end
 
