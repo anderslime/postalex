@@ -10,6 +10,10 @@ defmodule Postalex do
       worker(ConCache, [[], [name: :dk]],[ id: :dk_cache, modules: [ConCache]]),
       worker(ConCache, [[], [name: :se]],[ id: :se_cache, modules: [ConCache]]),
       worker(ConCache, [[], [name: :no]],[ id: :no_cache, modules: [ConCache]]),
+      worker(ConCache, [[], [name: :pl]],[ id: :pl_cache, modules: [ConCache]]),
+      worker(ConCache, [[], [name: :de]],[ id: :de_cache, modules: [ConCache]]),
+      worker(ConCache, [[], [name: :at]],[ id: :at_cache, modules: [ConCache]]),
+      worker(ConCache, [[], [name: :ch]],[ id: :ch_cache, modules: [ConCache]]),
       worker(Postalex.Server, [[]])
     ]
 
