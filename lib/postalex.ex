@@ -9,6 +9,7 @@ defmodule Postalex do
     children = [
       worker(ConCache, [[], [name: :dk]],[ id: :dk_cache, modules: [ConCache]]),
       worker(ConCache, [[], [name: :se]],[ id: :se_cache, modules: [ConCache]]),
+      worker(ConCache, [[], [name: :no]],[ id: :no_cache, modules: [ConCache]]),
       worker(Postalex.Server, [[]])
     ]
 
