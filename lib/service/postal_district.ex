@@ -9,6 +9,12 @@ defmodule Postalex.Service.PostalDistrict do
     end)
   end
 
+  def all_with_postal_codes(country) do
+    ConCache.get_or_store(country, "postal_districts_with_postal_codes", fn() ->
+      CouchClient.postal_districts_with_postal_codes(country)
+    end)
+  end
+
   def find_by_slug(ctry_cat, postal_district_slug) do
     all(ctry_cat) |> Enum.find fn(pd)-> pd.slug == postal_district_slug end
   end
